@@ -44,6 +44,10 @@ browserEvents.onMouseMove(function (x, y) {
 function DrawLinesImg () {
     LineImage.setImage(image.create(scene.screenWidth(), scene.screenHeight()))
     GUI.setImage(image.create(scene.screenWidth(), scene.screenHeight()))
+    for (let value of spriteutils.getSpritesWithin(SpriteKind.NodeKind, ConstrainDistance, Cursor)) {
+        Stress = Math.round(Math.abs(spriteutils.distanceBetween(Cursor, value) - ConstrainDistance))
+        LineImage.image.drawLine(Cursor.x, Cursor.y, value.x, value.y, Math.constrain(Stress / 2, 2, 6))
+    }
     LineImage.image.drawLine(0, 220, 320, 220, 14)
     GUI.image.drawTransparentImage(assets.image`NodesPlacingModeImg`, 10, 0)
     GUI.image.drawTransparentImage(assets.image`RoadsPlacingModeImg`, 30, 0)
@@ -70,6 +74,9 @@ function DrawLinesImg () {
                 if (sprites.readDataNumber(value, "Stress:" + NodeList.indexOf(value) + "-" + NodeList.indexOf(value2)) >= 5) {
                     sprites.setDataSprite(value, "Attached:" + NodeList.indexOf(value) + "-" + NodeList.indexOf(value2), value)
                     sprites.setDataSprite(value2, "Attached:" + NodeList.indexOf(value2) + "-" + NodeList.indexOf(value), value2)
+                    if (sprites.readDataNumber(value, "Attached#") == 1) {
+                    	
+                    }
                 }
             }
         }
@@ -93,8 +100,8 @@ let NodeSimilarity = 0
 let FpsCounter = 0
 let Distance = 0
 let AttachedNodesNum = 0
-let Stress = 0
 let Fps = 0
+let Stress = 0
 let NodeList2: Sprite[] = []
 let Node: Sprite = null
 let NodeList: Sprite[] = []
@@ -150,7 +157,7 @@ let PositionFinder = sprites.create(img`
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
     `, SpriteKind.Position)
-game.onUpdateInterval(50, function () {
+game.onUpdateInterval(25, function () {
     for (let value of sprites.allOfKind(SpriteKind.NodeKind)) {
         AttachedNodesNum = 1
         for (let value2 of sprites.allOfKind(SpriteKind.NodeKind)) {
@@ -178,11 +185,11 @@ game.onUpdateInterval(50, function () {
             }
         }
         if (!(value.y >= 220)) {
-            value.y = 1 + Math.round(sprites.readDataNumber(value, "Y")) / sprites.readDataNumber(value, "Attached#")
+            value.y = 0.5 + sprites.readDataNumber(value, "Y") / sprites.readDataNumber(value, "Attached#")
         } else {
             value.y = 220
         }
-        value.x = Math.round(sprites.readDataNumber(value, "X")) / sprites.readDataNumber(value, "Attached#")
+        value.x = sprites.readDataNumber(value, "X") / sprites.readDataNumber(value, "Attached#")
     }
     DrawLinesImg()
 })
