@@ -1,0 +1,32 @@
+{
+    "p7?vulw`z]3P61rq~N;v": {
+        "data": "hwQDAAMAAAABAQAAEAAAAAEBAAA=",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "Node"
+    },
+    "image3": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "myImage"
+    },
+    "image1": {
+        "data": "hwQQABAAAAAREREREREREfH///////8f8f///////x/xHx//////H/H/8f////8f8R8f/////x/x///3////H/H//3////8f8f////f//x/x////f///H/H/////8fEf8f////8f/x/x//////HxH/H///////8f8f///////x8REREREREREQ==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "NodesPlacingModeImg"
+    },
+    "image4": {
+        "data": "hwQQABAAAABERERERERERAQAAAAAAABABAAAAAAAAEAEAAAAAAAAQAQAAAAAAABABAAAAAAAAEAEAAAAAAAAQAQAAAAAAABABAAAAAAAAEAEAAAAAAAAQAQAAAAAAABABAAAAAAAAEAEAAAAAAAAQAQAAAAAAABABAAAAAAAAEBERERERERERA==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "myImage0"
+    },
+    "image2": {
+        "data": "hwQQABAAAAAREREREREREfH///////8f8f///////x/x8fH/////H/Ef//9m9v8f8fFm9vb2/x/x///29vb/H/H///b2Zh8f8f//Zvb/8R/x/////x8fH/H///////8f8f///////x/x////////H/H///////8f8f///////x8REREREREREQ==",
+        "mimeType": "image/x-mkcd-f4",
+        "displayName": "RoadsPlacingModeImg"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myImages"
+    }
+}
