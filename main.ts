@@ -43,22 +43,18 @@ function NextRoadNode (Node: Sprite, _01: boolean) {
     }
     if (_01) {
         for (let value of RoadNodesList) {
-            if (sprites.readDataNumber(Node, "RoadIndex") != sprites.readDataNumber(value, "RoadIndex") + 1) {
-                RoadNodesList.removeAt(RoadNodesList.indexOf(value))
+            if (sprites.readDataNumber(Node, "RoadIndex") == sprites.readDataNumber(value, "RoadIndex") + 1) {
+                return value
             }
         }
     } else {
         for (let value of RoadNodesList) {
-            if (sprites.readDataNumber(Node, "RoadIndex") != sprites.readDataNumber(value, "RoadIndex") - 1) {
-                RoadNodesList.removeAt(RoadNodesList.indexOf(value))
+            if (sprites.readDataNumber(Node, "RoadIndex") == sprites.readDataNumber(value, "RoadIndex") - 1) {
+                return value
             }
         }
     }
-    if (RoadNodesList.length > 0) {
-        return RoadNodesList[0]
-    } else {
-        return Node
-    }
+    return Node
 }
 controller.right.onEvent(ControllerButtonEvent.Pressed, function () {
     if (NodesPlacementMode) {
@@ -73,10 +69,10 @@ function PlaceRoad (x: number, y: number, Node: Sprite) {
     if (Bridge12 == 2) {
         Bridge12 = 1
         PositionFinder.setPosition(BridgeStart.x, BridgeStart.y)
-        RoadIndex = 0
-        for (let index = 0; index < spriteutils.distanceBetween(BridgeStart, Node) / RoadNodesPer; index++) {
-            PlaceRoadNode(PositionFinder.x, PositionFinder.y, RoadIndex, RoadNum, Node)
+        RoadIndex = -1
+        for (let index = 0; index < Math.round(spriteutils.distanceBetween(BridgeStart, Node) / RoadNodesPer) - 1; index++) {
             RoadIndex += 1
+            PlaceRoadNode(PositionFinder.x, PositionFinder.y, RoadIndex, RoadNum, BridgeStart, false)
             spriteutils.placeAngleFrom(
             PositionFinder,
             spriteutils.angleFrom(BridgeStart, Node),
@@ -84,6 +80,8 @@ function PlaceRoad (x: number, y: number, Node: Sprite) {
             PositionFinder
             )
         }
+        RoadIndex += 1
+        PlaceRoadNode(PositionFinder.x, PositionFinder.y, RoadIndex, RoadNum, Node, true)
         RoadNum += 1
     } else if (Bridge12 == 1) {
         Bridge12 = 2
@@ -147,19 +145,33 @@ function DrawLinesImg () {
             }
         }
     }
+    for (let value of sprites.allOfKind(SpriteKind.RoadKind)) {
+        for (let value2 of spriteutils.getSpritesWithin(SpriteKind.RoadKind, 50, value)) {
+            if (sprites.readDataNumber(value, "RoadIndex") + 1 == sprites.readDataNumber(value2, "RoadIndex") && sprites.readDataNumber(value, "RoadNum") == sprites.readDataNumber(value2, "RoadNum")) {
+                LineImage.image.drawLine(value.x, value.y, value2.x, value2.y, 8)
+            }
+        }
+    }
 }
-function PlaceRoadNode (x: number, y: number, index: number, num: number, StickTo: Sprite) {
+function PlaceRoadNode (x: number, y: number, index: number, num: number, StickTo: Sprite, bool: boolean) {
     RoadNode = sprites.create(img`
-        . 1 . 
-        1 1 1 
-        . 1 . 
+        . 6 . 
+        6 6 6 
+        . 6 . 
         `, SpriteKind.RoadKind)
     RoadNode.setPosition(x, y)
     sprites.setDataNumber(RoadNode, "RoadIndex", index)
     sprites.setDataNumber(RoadNode, "RoadNum", num)
     sprites.setDataSprite(RoadNode, "StickTo", RoadNode)
-    if (index == 0 || index == spriteutils.distanceBetween(BridgeStart, Node) / RoadNodesPer) {
+    if (index == 0 || bool) {
         sprites.setDataSprite(RoadNode, "StickTo", StickTo)
+        RoadNode.setImage(img`
+            4 4 4 4 4 
+            4 . 4 . 4 
+            4 4 4 4 4 
+            4 . 4 . 4 
+            4 4 4 4 4 
+            `)
     }
 }
 browserEvents.MouseLeft.onEvent(browserEvents.MouseButtonEvent.Pressed, function (x, y) {
@@ -173,9 +185,17 @@ browserEvents.MouseLeft.onEvent(browserEvents.MouseButtonEvent.Pressed, function
 })
 // temporary: destroys some connections between right clicked node
 browserEvents.MouseRight.onEvent(browserEvents.MouseButtonEvent.Pressed, function (x, y) {
-    for (let value of sprites.allOfKind(SpriteKind.NodeKind)) {
-        if (spriteutils.distanceBetween(spriteutils.pos(x, y), value) < 5) {
-            sprites.destroy(value)
+    if (NodesPlacementMode) {
+        for (let value of sprites.allOfKind(SpriteKind.NodeKind)) {
+            if (spriteutils.distanceBetween(spriteutils.pos(x, y), value) < 5) {
+                sprites.destroy(value)
+            }
+        }
+    } else {
+        for (let value of sprites.allOfKind(SpriteKind.RoadKind)) {
+            if (spriteutils.distanceBetween(spriteutils.pos(x, y), value) < 5) {
+                value.sayText(sprites.readDataNumber(value, "RoadIndex"))
+            }
         }
     }
 })
@@ -284,25 +304,18 @@ game.onUpdateInterval(25, function () {
     for (let value of sprites.allOfKind(SpriteKind.RoadKind)) {
         sprites.setDataNumber(value, "X", value.x)
         sprites.setDataNumber(value, "Y", value.y)
+        PositionFinder.setPosition(value.x, value.y)
         for (let index = 0; index <= 1; index++) {
-            if (sprites.readDataSprite(value, "StickTo") != value) {
-                value.setPosition(sprites.readDataSprite(value, "StickTo").x, sprites.readDataSprite(value, "StickTo").y)
-            }
-            if (index == 0) {
-                RoadForPhysics = NextRoadNode(value, true)
-            } else {
-                RoadForPhysics = NextRoadNode(value, false)
-            }
-            PositionFinder.setPosition(value.x, value.y)
+            RoadForPhysics = NextRoadNode(value, index == 0)
             spriteutils.placeAngleFrom(
             PositionFinder,
             spriteutils.angleFrom(value, RoadForPhysics),
-            (spriteutils.distanceBetween(value, RoadForPhysics) - RoadNodesPer) * Elasticity,
+            (spriteutils.distanceBetween(value, RoadForPhysics) - RoadNodesPer) / 4 * 3,
             PositionFinder
             )
-            sprites.changeDataNumberBy(value, "X", PositionFinder.x)
-            sprites.changeDataNumberBy(value, "Y", PositionFinder.y)
         }
+        sprites.changeDataNumberBy(value, "X", PositionFinder.x)
+        sprites.changeDataNumberBy(value, "Y", PositionFinder.y)
     }
     for (let value of sprites.allOfKind(SpriteKind.NodeKind)) {
         if (!(value.y >= 220)) {
@@ -314,11 +327,14 @@ game.onUpdateInterval(25, function () {
     }
     for (let value of sprites.allOfKind(SpriteKind.RoadKind)) {
         if (!(value.y >= 220)) {
-            value.y = 0.5 + sprites.readDataNumber(value, "Y") / 3
+            value.y = 0.25 + sprites.readDataNumber(value, "Y") / 2
         } else {
             value.y = 220
         }
-        value.x = sprites.readDataNumber(value, "X") / 3
+        value.x = sprites.readDataNumber(value, "X") / 2
+        if (sprites.readDataSprite(value, "StickTo") != value) {
+            value.setPosition(sprites.readDataSprite(value, "StickTo").x, sprites.readDataSprite(value, "StickTo").y)
+        }
     }
     DrawLinesImg()
 })
