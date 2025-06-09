@@ -9,6 +9,29 @@ namespace SpriteKind {
 controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
     PerformanceMode = !(PerformanceMode)
 })
+spriteutils.addEventHandler(spriteutils.UpdatePriorityModifier.After, spriteutils.UpdatePriority.Physics, function () {
+    if (LineImage.image.getPixel(CollisionTesting.x, CollisionTesting.bottom) == 8) {
+        CollisionTesting.y += CollisionPushBack * -1
+    } else if (LineImage.image.getPixel(CollisionTesting.x, CollisionTesting.top) == 8) {
+        CollisionTesting.y += CollisionPushBack * 1
+    } else if (LineImage.image.getPixel(CollisionTesting.left, CollisionTesting.bottom) == 8) {
+        CollisionTesting.y += CollisionPushBack * -1
+        CollisionTesting.x += CollisionPushBack * 1
+    } else if (LineImage.image.getPixel(CollisionTesting.left, CollisionTesting.top) == 8) {
+        CollisionTesting.y += CollisionPushBack * 1
+        CollisionTesting.x += CollisionPushBack * 1
+    } else if (LineImage.image.getPixel(CollisionTesting.right, CollisionTesting.bottom) == 8) {
+        CollisionTesting.y += CollisionPushBack * -1
+        CollisionTesting.x += CollisionPushBack * -1
+    } else if (LineImage.image.getPixel(CollisionTesting.right, CollisionTesting.top) == 8) {
+        CollisionTesting.y += CollisionPushBack * 1
+        CollisionTesting.x += CollisionPushBack * -1
+    } else if (LineImage.image.getPixel(CollisionTesting.right, CollisionTesting.y) == 8) {
+        CollisionTesting.x += CollisionPushBack * -1
+    } else if (LineImage.image.getPixel(CollisionTesting.left, CollisionTesting.y) == 8) {
+        CollisionTesting.x += CollisionPushBack * 1
+    }
+})
 function PlaceNode (ConstrainDist: number, X: number, Y: number, Frozen: boolean) {
     Node = sprites.create(assets.image`Node`, SpriteKind.NodeKind)
     sprites.setDataNumber(Node, "Attached#", 1)
@@ -148,16 +171,19 @@ function DrawLinesImg () {
     for (let value of sprites.allOfKind(SpriteKind.RoadKind)) {
         for (let value2 of spriteutils.getSpritesWithin(SpriteKind.RoadKind, 50, value)) {
             if (sprites.readDataNumber(value, "RoadIndex") + 1 == sprites.readDataNumber(value2, "RoadIndex") && sprites.readDataNumber(value, "RoadNum") == sprites.readDataNumber(value2, "RoadNum")) {
-                LineImage.image.drawLine(value.x, value.y, value2.x, value2.y, 8)
+                for (let index = 0; index <= 2; index++) {
+                    LineImage.image.drawLine(value.x + index, value.y, value2.x + index, value2.y, 8)
+                    LineImage.image.drawLine(value.x, value.y + index, value2.x, value2.y + index, 8)
+                }
             }
         }
     }
 }
 function PlaceRoadNode (x: number, y: number, index: number, num: number, StickTo: Sprite, bool: boolean) {
     RoadNode = sprites.create(img`
-        . 6 . 
         6 6 6 
-        . 6 . 
+        6 6 6 
+        6 6 6 
         `, SpriteKind.RoadKind)
     RoadNode.setPosition(x, y)
     sprites.setDataNumber(RoadNode, "RoadIndex", index)
@@ -217,9 +243,11 @@ let Node: Sprite = null
 let PerformanceMode = false
 let PositionFinder: Sprite = null
 let NodeList: Sprite[] = []
+let CollisionTesting: Sprite = null
 let GUI: Sprite = null
 let LineImage: Sprite = null
 let Cursor: Sprite = null
+let CollisionPushBack = 0
 let RoadNodesPer = 0
 let ConstrainDistance = 0
 let NodesPlacementMode = false
@@ -236,10 +264,30 @@ ConstrainDistance = 35
 let Elasticity = 1.75
 let DistanceEasing = 1.5
 RoadNodesPer = 10
+CollisionPushBack = 2.2
 Cursor = sprites.create(image.create(ConstrainDistance * 2 + 1, ConstrainDistance * 2 + 1), SpriteKind.Mouse)
 LineImage = sprites.create(image.create(scene.screenWidth(), scene.screenHeight()), SpriteKind.Image)
 GUI = sprites.create(image.create(scene.screenWidth(), scene.screenHeight()), SpriteKind.Image)
 LineImage.image.drawLine(0, 220, 320, 220, 6)
+CollisionTesting = sprites.create(img`
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 9 
+    `, SpriteKind.Player)
+controller.moveSprite(CollisionTesting)
 spriteutils.fillCircle(
 Cursor.image,
 ConstrainDistance,
